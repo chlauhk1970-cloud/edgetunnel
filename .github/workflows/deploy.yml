@@ -1,0 +1,42 @@
+name: Deploy to Across Multiple Cloudflare Accounts
+
+on:
+  push:
+    branches:
+      - main  # 當你的儲存庫有變動時觸發
+  workflow_dispatch: # 允許你隨時手動點擊按鈕觸發部署
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    
+    strategy:
+      matrix:
+        # ⚠️ 請把下方「中括號」裡的文字，替換成你第一步記下來的實際資料
+        include:
+          - account_id: '376b8acd0645dccbd5741dc8dbf845f3'
+            project_name: 'ecoportal'
+
+          - account_id: '7b2ee628a48fa4caeb5db4d0cd16b462'
+            project_name: 'neoportal'
+
+          - account_id: 'skyportal'
+            project_name: 'cb83269139ac584fca2473765a77aec7'
+
+          - account_id: 'voxportal'
+            project_name: 'd8df067cdba2163cdb32fbf538b80fd7'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }} # 使用我們鎖在 GitHub 的萬能鑰匙
+          accountId: ${{ matrix.account_id }}         # 系統會自動帶入上面對應的帳戶 ID
+          projectName: ${{ matrix.project_name }}     # 系統會自動帶入上面對應的專案名稱
+          directory: '.' # edgetunnel 直接上傳根目錄所有檔案
