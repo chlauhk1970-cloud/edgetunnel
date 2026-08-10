@@ -3,8 +3,8 @@ name: Deploy to Across Multiple Cloudflare Accounts
 on:
   push:
     branches:
-      - main  # 當你的儲存庫有變動時觸發
-  workflow_dispatch: # 允許你隨時手動點擊按鈕觸發部署
+      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -14,20 +14,21 @@ jobs:
       deployments: write
     
     strategy:
+      fail-fast: false # 💡 加上這一行：即使其中一個帳戶失敗，其他帳戶也會繼續完成上傳！
       matrix:
-        # ⚠️ 請把下方「中括號」裡的文字，替換成你第一步記下來的實際資料
         include:
-          - account_id: '376b8acd0645dccbd5741dc8dbf845f3'
-            project_name: 'ecoportal'
+          # ⚠️ 請再次核對：左邊必須是 32位元 ID，右邊必須是網站名稱
+          - account_id: 'cb83269139ac584fca2473765a77aec7' # 請確認這是不是 skyportal 帳戶的 ID
+            project_name: 'skyportal'
 
-          - account_id: '7b2ee628a48fa4caeb5db4d0cd16b462'
+          - account_id: '7b2ee628a48fa4caeb5db4d0cd16b462' # 請確認這是不是 neoportal 帳戶的 ID
             project_name: 'neoportal'
 
-          - account_id: 'skyportal'
-            project_name: 'cb83269139ac584fca2473765a77aec7'
+          - account_id: 'd8df067cdba2163cdb32fbf538b80fd7' # 請確認這是不是 voxportal 帳戶的 ID
+            project_name: 'voxportal'
 
-          - account_id: 'voxportal'
-            project_name: 'd8df067cdba2163cdb32fbf538b80fd7'
+          - account_id: '376b8acd0645dccbd5741dc8dbf845f3' # 請確認這是不是 ecoportal 帳戶的 ID
+            project_name: 'ecoportal'
 
     steps:
       - name: Checkout code
@@ -36,7 +37,7 @@ jobs:
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }} # 使用我們鎖在 GitHub 的萬能鑰匙
-          accountId: ${{ matrix.account_id }}         # 系統會自動帶入上面對應的帳戶 ID
-          projectName: ${{ matrix.project_name }}     # 系統會自動帶入上面對應的專案名稱
-          directory: '.' # edgetunnel 直接上傳根目錄所有檔案
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ matrix.account_id }}
+          projectName: ${{ matrix.project_name }}
+          directory: '.'
